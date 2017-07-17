@@ -257,8 +257,9 @@ public class GameWorld implements IGameWorld
     }
     //Method that selects a GameWorldObject based on the location of a 
     //mouse click, an Orb in this case, moves objects when the second object is 
-    //selected and unselects all selected objects.
-    //Used in Game inside the mouseClicked(MouseEvent e) method.
+    //selected and unselects all selected objects. It also calls upon various methods for
+    //orb mapping detection and starts their deletion animations.
+    //Used in MapView inside the mouseClicked(MouseEvent e) method.
 	public void setGameObjectSelect(Point2D p) 
 	{
 		for(int row = 5; row <= gameMap.length - 1; row++)
