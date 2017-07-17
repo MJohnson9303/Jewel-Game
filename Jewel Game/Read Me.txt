@@ -1,0 +1,43 @@
+Hello. This is a is a simple jewel matching game that I developed out of curiosity. The player has 3 minutes to get to the highest
+level you can. There is no skyfall matching (where jewels slide down the screen and cause additional jewel matching for the player).
+To increase the time limit the player can match "star orbs" (edited image owned by Nintendo) by 12 seconds for each orb. For the
+other orbs in the game the player can receive points toward the goal of each level. Once the goal is reached, the goal is updated and
+the player's points are reset to 0 for the new level. There is no transition animation between level nor congratulatory music.
+In general when a match is made the matched Orbs shrink away and are replaced by new Orbs that appear to grow in their place.
+
+Assuming you have at least downloaded Java JRE, you can simple click on "Start_Game" to start the game. If you have download
+Java JDK to alter and compile new programming such as for the files for this game, you can click on "Compile_Game" to compile the changes.
+
+Win Conditions: None (just try to reach the highest level you can)
+Loss Conditions: Run out of time
+				 
+Sounds: Set to on by default (It is loud so I suggest you set your volume to 50 or below.
+        Background: "03-a-new-journey.wav" (owned by GungHo)
+	
+Game Objects (images owned by GungHo or Nintendo):
+	FireOrb: Match for points.	
+        LeafOrb: Match for points.
+	WaterOrb: Match for points.
+        DarknessOrb: Match for points.
+        LightOrb: Match for points.
+        StarOrb: Match for more game time.
+
+Point System:
+	Star Orbs: 12 seconds added to the timer limit.
+	Other Orbs (Fire, Water, Leaf, Darkness, Light): 
+		Three in a row = 50
+		Four in a row = 150
+		Five in a row = 300
+		Six in a row = 500	
+		
+Game Controls (located in top right hand corner called "Options):
+	Sound: Toggles the background game music between "on" and "off".
+
+Commands: 
+	Pause: Pauses the game and turns off the background game music until you click on "Play" where you clicked "Pause".
+        Add 30 Seconds: Adds 30 seconds to your time limit.
+        Subtract 30 Seconds: Subtract 30 seconds from your time limit.
+        Add 100 Points: Adds 100 points to your score.
+        Subtract 100 Points: Subtracts 100 points from your score.
+        Quit: A dialog box appears causing the game to pause and offers the choice to quit the game or continue playing.
+	
