@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Iterator;
-import java.util.ListIterator;
 import java.util.Random;
 import java.util.Vector;
 
@@ -46,14 +45,13 @@ public class GameWorld implements IGameWorld
     private GameWorldObject[][] gameMap = new GameWorldObject[10][12];
 	//This will hold GameWorldObjects to be deleted from the game.
 	private Vector<GameWorldObject> toBeDeletedCollection = new Vector<GameWorldObject>();
-	//Rate for various orb matches with 500 with being the highest score total in one type of match detection.
-	//as these point rates add together as matches are found for each Orb type.
+	//Rate for various orb matches.
 	private int match3PointsRate = 50;
-	private int match4PointsRate = 100;
-	private int match5PointsRate = 150;
-	private int match6PointsRate = 200;
-	//Flat rate for all star orb matches with 60 seconds being the highest time recovery possible in one type of match detection.
-	private int matchStarClockRate = 12;
+	private int match4PointsRate = 150;
+	private int match5PointsRate = 300;
+	private int match6PointsRate = 500;
+	//Flat rate for all star orb matches. 60 seconds is the highest possible reward for a type of match.
+	private int matchStarClockRate = 10;
 	
 	//This method is used to determine game conditions such as if the User reached the next level
 	//or ran out of time.
@@ -257,9 +255,8 @@ public class GameWorld implements IGameWorld
     }
     //Method that selects a GameWorldObject based on the location of a 
     //mouse click, an Orb in this case, moves objects when the second object is 
-    //selected and unselects all selected objects. It also calls upon various methods for
-    //orb mapping detection and starts their deletion animations.
-    //Used in MapView inside the mouseClicked(MouseEvent e) method.
+    //selected and unselects all selected objects.
+    //Used in Game inside the mouseClicked(MouseEvent e) method.
 	public void setGameObjectSelect(Point2D p) 
 	{
 		for(int row = 5; row <= gameMap.length - 1; row++)
@@ -303,6 +300,8 @@ public class GameWorld implements IGameWorld
 			   }
 	        }
     	}
+		System.out.println();
+		System.out.println("Map Before Change Due to Match Detection:");
 		displayGameMapText();
 	}
 	//Method that has all movable objects to update their positions.
@@ -493,7 +492,45 @@ public class GameWorld implements IGameWorld
 				if(gameMap[row][i] instanceof FireOrb)
     	    	{
     	    		fireOrbMatches++;
-    	        	//If a Fire Orb match is found, print a message with the row number.
+    	    	}
+				//If the chain was broken, check for up to 5 matches of Orbs.
+				else
+				{
+					//If a Fire Orb match is found, print a message with the row number.
+        	    	if(fireOrbMatches == 3)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match3PointsRate);
+        	    		System.out.println("Found fire 3 match in row "+ (row-4));
+        	    	}
+        	    	if(fireOrbMatches == 4)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match4PointsRate);
+        	    		System.out.println("Found fire 4 match in row "+ (row-4));
+        	    	}
+        	    	if(fireOrbMatches == 5)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match5PointsRate);
+        	    		System.out.println("Found fire 5 match in row "+ (row-4));
+        	    	}
+					//Reset the match count as chain was broken.
+		        	fireOrbMatches = 0;
+				}
+				//If the chain was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Water Orb match is found, print a message with the row number.
         	    	if(fireOrbMatches == 3)
         	    	{
         	    		toBeDeletedCollection.add(gameMap[row][i-2]);
@@ -504,28 +541,35 @@ public class GameWorld implements IGameWorld
         	    	}
         	    	if(fireOrbMatches == 4)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match4PointsRate);
         	    		System.out.println("Found fire 4 match in row "+ (row-4));
         	    	}
         	    	if(fireOrbMatches == 5)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match5PointsRate);
         	    		System.out.println("Found fire 5 match in row "+ (row-4));
         	    	}
         	    	if(fireOrbMatches == 6)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match6PointsRate);
         	    		System.out.println("Found fire 6 match in row "+ (row-4));
         	    	}
-    	    	}
-				else
-				{
-					//Reset the match count as chain was broken.
-		        	fireOrbMatches = 0;
-				}
+				}	
 			}
 			//Reset the match count for the next row.
         	fireOrbMatches = 0;
@@ -539,8 +583,36 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof FireOrb)
     	    	{
     	    		fireOrbMatches++;
-    	        	//If a Fire Orb match is found, print a message with the row number.
-        	    	if(fireOrbMatches == 3)
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	        else
+				{
+    	    		//If a Fire Orb match is found, print a message with the row number.
+    	    		if(fireOrbMatches == 3)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+        	        	setGamePoints(getGamePoints()+match3PointsRate);
+        	        	System.out.println("Found fire 3 match in column "+ (col-5));
+        	    	}
+        	    	if(fireOrbMatches == 4)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+        	        	setGamePoints(getGamePoints()+match4PointsRate);
+        	        	System.out.println("Found fire 4 match in column "+ (col-5));
+        	    	}
+					//Reset the match count as the chain was broken.
+		        	fireOrbMatches = 0;
+				}
+    	    	//If the chain was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
+				{
+					//If a Fire Orb match is found, print a message with the row number.
+    	    		if(fireOrbMatches == 3)
         	    	{
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
         	    		toBeDeletedCollection.add(gameMap[i-1][col]);
@@ -550,21 +622,23 @@ public class GameWorld implements IGameWorld
         	    	}
         	    	if(fireOrbMatches == 4)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		toBeDeletedCollection.add(gameMap[i][col]);
         	        	setGamePoints(getGamePoints()+match4PointsRate);
         	        	System.out.println("Found fire 4 match in column "+ (col-5));
         	    	}
         	    	if(fireOrbMatches == 5)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		toBeDeletedCollection.add(gameMap[i][col]);
         	        	setGamePoints(getGamePoints()+match5PointsRate);
-           	    		System.out.println("Found fire 5 match in column "+ (col-5));
+        	        	System.out.println("Found fire 5 match in column "+ (col-5));
         	    	}
-    	    	}
-    	    	else
-				{
-					//Reset the match count as count was broken.
-		        	fireOrbMatches = 0;
 				}
     	    }
     	    //Reset the match count for the next row.
@@ -585,7 +659,45 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[row][i] instanceof WaterOrb)
     	    	{
     	    		waterOrbMatches++;
-    	        	//If a Water Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 5 matches of Orbs.
+    	    	else
+				{
+    	    		//If a Water Orb match is found, print a message with the row number.
+        	    	if(waterOrbMatches == 3)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match3PointsRate);
+        	    		System.out.println("Found water 3 match in row "+ (row-4));
+        	    	}
+        	    	if(waterOrbMatches == 4)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match4PointsRate);
+        	    		System.out.println("Found water 4 match in row "+ (row-4));
+        	    	}
+        	    	if(waterOrbMatches == 5)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match5PointsRate);
+        	    		System.out.println("Found water 5 match in row "+ (row-4));
+        	    	}
+					//Reset the match count as the chain was broken.
+		        	waterOrbMatches = 0;
+				}
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Water Orb match is found, print a message with the row number.
         	    	if(waterOrbMatches == 3)
         	    	{
         	    		toBeDeletedCollection.add(gameMap[row][i-2]);
@@ -596,27 +708,34 @@ public class GameWorld implements IGameWorld
         	    	}
         	    	if(waterOrbMatches == 4)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match4PointsRate);
         	    		System.out.println("Found water 4 match in row "+ (row-4));
         	    	}
         	    	if(waterOrbMatches == 5)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match5PointsRate);
         	    		System.out.println("Found water 5 match in row "+ (row-4));
         	    	}
         	    	if(waterOrbMatches == 6)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match6PointsRate);
         	    		System.out.println("Found water 6 match in row "+ (row-4));
         	    	}
-    	    	}
-    	    	else
-				{
-					//Reset the match count as the chain was broken.
-		        	waterOrbMatches = 0;
 				}
 			}
 			//Reset the match count for the next row.
@@ -631,7 +750,35 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof WaterOrb)
     	    	{
     	    		waterOrbMatches++;
-    	        	//If a Water Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	    	else
+    	    	{
+    	    		//If a Water Orb match is found, print a message with the col number.
+        	    	if(waterOrbMatches == 3)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+        	        	setGamePoints(getGamePoints()+match3PointsRate);
+        	        	System.out.println("Found water 3 match in column "+ (col-5));
+        	    	}
+        	    	if(waterOrbMatches == 4)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+        	    		setGamePoints(getGamePoints()+match4PointsRate);
+        	    		System.out.println("Found water 4 match in column "+ (col-5));
+        	    	}
+    	    		//Reset the match count as the chain was broken.
+    	    		waterOrbMatches = 0;
+    	    	}
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
+				{
+					//If a Water Orb match is found, print a message with the col number.
         	    	if(waterOrbMatches == 3)
         	    	{
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
@@ -642,22 +789,24 @@ public class GameWorld implements IGameWorld
         	    	}
         	    	if(waterOrbMatches == 4)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		toBeDeletedCollection.add(gameMap[i][col]);
         	    		setGamePoints(getGamePoints()+match4PointsRate);
         	    		System.out.println("Found water 4 match in column "+ (col-5));
         	    	}
         	    	if(waterOrbMatches == 5)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		toBeDeletedCollection.add(gameMap[i][col]);
         	    		setGamePoints(getGamePoints()+match5PointsRate);
         	    		System.out.println("Found water 5 match in column "+ (col-5));
         	    	}
-    	    	}
-    	    	else
-    	    	{
-    	    		//Reset the match count as the chain was broken.
-    	    		waterOrbMatches = 0;
-    	    	}
+				}
     	    }
     	    //Reset the match count for the next row.
     	    waterOrbMatches = 0;
@@ -676,7 +825,45 @@ public class GameWorld implements IGameWorld
 				if(gameMap[row][i] instanceof LeafOrb)
     	    	{
     	    		leafOrbMatches++;
-    	        	//If a Leaf Orb match is found, print a message with the row number.
+    	    	}
+				//If the chain was broken, check for up to 5 matches of Orbs.
+				else
+				{
+					//If a Leaf Orb match is found, print a message with the row number.
+        	    	if(leafOrbMatches == 3)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match3PointsRate);
+        	    		System.out.println("Found leaf 3 match in row "+ (row-4));
+        	    	}
+        	    	if(leafOrbMatches == 4)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match4PointsRate);
+        	    		System.out.println("Found leaf 4 match in row "+ (row-4));
+        	    	}
+        	    	if(leafOrbMatches == 5)
+        	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
+        	        	setGamePoints(getGamePoints()+match5PointsRate);
+        	    		System.out.println("Found leaf 5 match in row "+ (row-4));
+        	    	}
+					//Reset the match count as the chain was broken.
+		        	leafOrbMatches = 0;
+				}
+				//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Water Orb match is found, print a message with the row number.
         	    	if(leafOrbMatches == 3)
         	    	{
         	    		toBeDeletedCollection.add(gameMap[row][i-2]);
@@ -687,27 +874,34 @@ public class GameWorld implements IGameWorld
         	    	}
         	    	if(leafOrbMatches == 4)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match4PointsRate);
         	    		System.out.println("Found leaf 4 match in row "+ (row-4));
         	    	}
         	    	if(leafOrbMatches == 5)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match5PointsRate);
         	    		System.out.println("Found leaf 5 match in row "+ (row-4));
         	    	}
         	    	if(leafOrbMatches == 6)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[row][i-5]);
+        	    		toBeDeletedCollection.add(gameMap[row][i-4]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-3]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-2]);
+        	        	toBeDeletedCollection.add(gameMap[row][i-1]);
         	        	toBeDeletedCollection.add(gameMap[row][i]);
         	        	setGamePoints(getGamePoints()+match6PointsRate);
         	    		System.out.println("Found leaf 6 match in row "+ (row-4));
         	    	}
-    	    	}
-				else
-				{
-					//Reset the match count as the chain was broken.
-		        	leafOrbMatches = 0;
 				}
 			}
 			//Reset the match count for the next row.
@@ -721,33 +915,63 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof LeafOrb)
     	    	{
     	    		leafOrbMatches++;
-    	        	//If a Leaf Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	    	else
+    	    	{
+    	    		//If a Leaf Orb match is found, print a message with the col number.
         	    	if(leafOrbMatches == 3)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
-        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
-        	        	toBeDeletedCollection.add(gameMap[i][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
         	        	setGamePoints(getGamePoints()+match3PointsRate);
         	        	System.out.println("Found leaf 3 match in column "+ (col-5));
         	    	}
         	    	if(leafOrbMatches == 4)
         	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		setGamePoints(getGamePoints()+match4PointsRate);
            	    		System.out.println("Found leaf 4 match in column "+ (col-5));
         	    	}
-        	    	if(leafOrbMatches == 5)
-        	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
-        	    		setGamePoints(getGamePoints()+match5PointsRate);
-        	    		System.out.println("Found leaf 5 match in column "+ (col-5));
-        	    	}
-    	    	}
-    	    	else
-    	    	{
     	    		//Reset the match count as the chain was broken.
     	    		leafOrbMatches = 0;
     	    	}
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
+				{
+	    	    	//If a Leaf Orb match is found, print a message with the col number.
+	    	    	if(leafOrbMatches == 3)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i][col]);
+	    	        	setGamePoints(getGamePoints()+match3PointsRate);
+	    	        	System.out.println("Found leaf 3 match in column "+ (col-5));
+	    	    	}
+	    	    	if(leafOrbMatches == 4)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match4PointsRate);
+	       	    		System.out.println("Found leaf 4 match in column "+ (col-5));
+	    	    	}
+	    	    	if(leafOrbMatches == 5)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match5PointsRate);
+	    	    		System.out.println("Found leaf 5 match in column "+ (col-5));
+	    	    	}
+				}
     	    }
     	    //Reset the match count for the next row.
         	leafOrbMatches = 0;
@@ -766,7 +990,45 @@ public class GameWorld implements IGameWorld
 		    	if(gameMap[row][i] instanceof DarknessOrb)
 		    	{
 		    		darknessOrbMatches++;
-		        	//If a Darkness Orb match is found, print a message with the row number.
+		    	}
+		    	//If the chain was broken, check for up to 5 matches of Orbs.
+		    	else
+				{
+		    		//If a Darkness Orb match is found, print a message with the row number.
+			    	if(darknessOrbMatches == 3)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match3PointsRate);
+			    		System.out.println("Found dark 3 match in row "+ (row-4));
+			    	}
+			    	if(darknessOrbMatches == 4)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match4PointsRate);
+			    		System.out.println("Found dark 4 match in row "+ (row-4));
+			    	}
+			    	if(darknessOrbMatches == 5)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			        	toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match5PointsRate);
+			    		System.out.println("Found dark 5 match in row "+ (row-4));
+			    	}
+					//Reset the match count as the chain was broken.
+		        	darknessOrbMatches = 0;
+				}
+		    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Darkness Orb match is found, print a message with the row number.
 			    	if(darknessOrbMatches == 3)
 			    	{
 			    		toBeDeletedCollection.add(gameMap[row][i-2]);
@@ -777,32 +1039,40 @@ public class GameWorld implements IGameWorld
 			    	}
 			    	if(darknessOrbMatches == 4)
 			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
 			        	toBeDeletedCollection.add(gameMap[row][i]);
 			        	setGamePoints(getGamePoints()+match4PointsRate);
 			    		System.out.println("Found dark 4 match in row "+ (row-4));
 			    	}
 			    	if(darknessOrbMatches == 5)
 			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
 			        	toBeDeletedCollection.add(gameMap[row][i]);
 			        	setGamePoints(getGamePoints()+match5PointsRate);
 			    		System.out.println("Found dark 5 match in row "+ (row-4));
 			    	}
 			    	if(darknessOrbMatches == 6)
 			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
 			        	toBeDeletedCollection.add(gameMap[row][i]);
 			        	setGamePoints(getGamePoints()+match6PointsRate);
 			    		System.out.println("Found dark 6 match in row "+ (row-4));
 			    	}
-		    	}
-		    	else
-				{
-					//Reset the match count as the chain was broken.
-		        	darknessOrbMatches = 0;
 				}
 			}
 			//Reset the match count for the next row.
         	darknessOrbMatches = 0;
 		}
+    	
     	//Checking for matches vertically.
     	for(int col = 6; col <= gameMap[0].length - 1; col++)
     	{      
@@ -811,35 +1081,62 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof DarknessOrb)
     	    	{
     	    		darknessOrbMatches++;
-    	    		//Reset the match count for the next row.
-    	        	//If a Darkness Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	    	else
+    	    	{
+    	    		//If a Darkness Orb match is found, print a message with the col number.
         	    	if(darknessOrbMatches == 3)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
-        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
-        	        	toBeDeletedCollection.add(gameMap[i][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
         	        	setGamePoints(getGamePoints()+match3PointsRate);
         	        	System.out.println("Found dark 3 match in column "+ (col-5));
         	    	}
         	    	if(darknessOrbMatches == 4)
         	    	{
-        	    		
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		setGamePoints(getGamePoints()+match4PointsRate);
-        	    		System.out.println("Found dark 4 match in column "+ (col-5));
+           	    		System.out.println("Found dark 4 match in column "+ (col-5));
         	    	}
-        	    	if(darknessOrbMatches == 5)
-        	    	{
-        	    		
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
-        	    		setGamePoints(getGamePoints()+match5PointsRate);
-        	    		System.out.println("Found dark 5 match in column "+ (col-5));
-        	    	}   	    
-        	    }
-    	    	else
+    	    		//Reset the match count as the chain was broken.
+    	    		darknessOrbMatches = 0;
+    	    	}
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
 				{
-					//Reset the match count as the chain was broken.
-		        	darknessOrbMatches = 0;
+	    	    	//If a Darkness Orb match is found, print a message with the col number.
+	    	    	if(darknessOrbMatches == 3)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i][col]);
+	    	        	setGamePoints(getGamePoints()+match3PointsRate);
+	    	        	System.out.println("Found dark 3 match in column "+ (col-5));
+	    	    	}
+	    	    	if(darknessOrbMatches == 4)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match4PointsRate);
+	       	    		System.out.println("Found dark 4 match in column "+ (col-5));
+	    	    	}
+	    	    	if(darknessOrbMatches == 5)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match5PointsRate);
+	    	    		System.out.println("Found dark 5 match in column "+ (col-5));
+	    	    	}
 				}
     	    }
     	    //Reset the match count for the next row.
@@ -856,47 +1153,92 @@ public class GameWorld implements IGameWorld
 		{
 			for(int i = 6; i <= gameMap[0].length - 1; i++)
 			{
-				if(gameMap[row][i] instanceof LightOrb)
-    	    	{
-    	    		lightOrbMatches++;
-    	    		//Reset the match count for the next row.
-    	        	//If a Light Orb match is found, print a message with the row number.
-        	    	if(lightOrbMatches == 3)
-        	    	{
-        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
-        	    		toBeDeletedCollection.add(gameMap[row][i-1]);
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGamePoints(getGamePoints()+match3PointsRate);
-        	    		System.out.println("Found light 3 match in row "+ (row-4));
-        	    	}
-        	    	if(lightOrbMatches == 4)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGamePoints(getGamePoints()+match4PointsRate);
-        	    		System.out.println("Found light 4 match in row "+ (row-4));
-        	    	}
-        	    	if(lightOrbMatches == 5)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGamePoints(getGamePoints()+match5PointsRate);
-        	    		System.out.println("Found light 5 match in row "+ (row-4));
-        	    	}
-        	    	if(lightOrbMatches == 6)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGamePoints(getGamePoints()+match6PointsRate);
-        	    		System.out.println("Found light 6 match in row "+ (row-4));
-        	    	}
-    	    	}
-				else
+		    	if(gameMap[row][i] instanceof LightOrb)
+		    	{
+		    		lightOrbMatches++;
+		    	}
+		    	//If the chain was broken, check for up to 5 matches of Orbs.
+		    	else
 				{
+		    		//If a Light Orb match is found, print a message with the row number.
+			    	if(lightOrbMatches == 3)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match3PointsRate);
+			    		System.out.println("Found light 3 match in row "+ (row-4));
+			    	}
+			    	if(lightOrbMatches == 4)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match4PointsRate);
+			    		System.out.println("Found light 4 match in row "+ (row-4));
+			    	}
+			    	if(lightOrbMatches == 5)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			        	toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGamePoints(getGamePoints()+match5PointsRate);
+			    		System.out.println("Found light 5 match in row "+ (row-4));
+			    	}
 					//Reset the match count as the chain was broken.
 		        	lightOrbMatches = 0;
+				}
+		    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Light Orb match is found, print a message with the row number.
+			    	if(lightOrbMatches == 3)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			    		toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGamePoints(getGamePoints()+match3PointsRate);
+			    		System.out.println("Found light 3 match in row "+ (row-4));
+			    	}
+			    	if(lightOrbMatches == 4)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGamePoints(getGamePoints()+match4PointsRate);
+			    		System.out.println("Found light 4 match in row "+ (row-4));
+			    	}
+			    	if(lightOrbMatches == 5)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGamePoints(getGamePoints()+match5PointsRate);
+			    		System.out.println("Found light 5 match in row "+ (row-4));
+			    	}
+			    	if(lightOrbMatches == 6)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGamePoints(getGamePoints()+match6PointsRate);
+			    		System.out.println("Found light 6 match in row "+ (row-4));
+			    	}
 				}
 			}
 			//Reset the match count for the next row.
         	lightOrbMatches = 0;
 		}
+    	
     	//Checking for matches vertically.
     	for(int col = 6; col <= gameMap[0].length - 1; col++)
     	{      
@@ -905,32 +1247,62 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof LightOrb)
     	    	{
     	    		lightOrbMatches++;
-    	        	//If a Light Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	    	else
+    	    	{
+    	    		//If a Light Orb match is found, print a message with the col number.
         	    	if(lightOrbMatches == 3)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
-        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
-        	        	toBeDeletedCollection.add(gameMap[i][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
         	        	setGamePoints(getGamePoints()+match3PointsRate);
         	        	System.out.println("Found light 3 match in column "+ (col-5));
         	    	}
         	    	if(lightOrbMatches == 4)
         	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
         	    		setGamePoints(getGamePoints()+match4PointsRate);
-        	    		System.out.println("Found light 4 match in column "+ (col-5));
+           	    		System.out.println("Found light 4 match in column "+ (col-5));
         	    	}
-        	    	if(lightOrbMatches == 5)
-        	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
-        	    		setGamePoints(getGamePoints()+match5PointsRate);
-        	    		System.out.println("Found light 5 match in column "+ (col-5));
-        	    	}
+    	    		//Reset the match count as the chain was broken.
+    	    		lightOrbMatches = 0;
     	    	}
-    	    	else
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
 				{
-					//Reset the match count as the chain was broken.
-		        	lightOrbMatches = 0;
+	    	    	//If a Light Orb match is found, print a message with the col number.
+	    	    	if(lightOrbMatches == 3)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i][col]);
+	    	        	setGamePoints(getGamePoints()+match3PointsRate);
+	    	        	System.out.println("Found light 3 match in column "+ (col-5));
+	    	    	}
+	    	    	if(lightOrbMatches == 4)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match4PointsRate);
+	       	    		System.out.println("Found light 4 match in column "+ (col-5));
+	    	    	}
+	    	    	if(lightOrbMatches == 5)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGamePoints(getGamePoints()+match5PointsRate);
+	    	    		System.out.println("Found light 5 match in column "+ (col-5));
+	    	    	}
 				}
     	    }
     	    //Reset the match count for the next row.
@@ -947,47 +1319,92 @@ public class GameWorld implements IGameWorld
 		{
 			for(int i = 6; i <= gameMap[0].length - 1; i++)
 			{
-				if(gameMap[row][i] instanceof StarOrb)
-    	    	{
-    	    		starOrbMatches++;
-    	    		//Reset the match count for the next row.
-        	    	//If a Star Orb match is found, print a message with the row number.
-        	    	if(starOrbMatches == 3)
-        	    	{
-        	    		toBeDeletedCollection.add(gameMap[row][i-2]);
-        	    		toBeDeletedCollection.add(gameMap[row][i-1]);
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 3 match in row "+ (row-4));
-        	    	}
-        	    	if(starOrbMatches == 4)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 4 match in row "+ (row-4));
-        	    	}
-        	    	if(starOrbMatches == 5)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 5 match in row "+ (row-4));
-        	    	}
-        	    	if(starOrbMatches == 6)
-        	    	{
-        	        	toBeDeletedCollection.add(gameMap[row][i]);
-        	        	setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 6 match in row "+ (row-4));
-        	    	}
-    	    	}
-				else
+		    	if(gameMap[row][i] instanceof StarOrb)
+		    	{
+		    		starOrbMatches++;
+		    	}
+		    	//If the chain was broken, check for up to 5 matches of Orbs.
+		    	else
 				{
+		    		//If a Light Orb match is found, print a message with the row number.
+			    	if(starOrbMatches == 3)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 3 match in row "+ (row-4));
+			    	}
+			    	if(starOrbMatches == 4)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 4 match in row "+ (row-4));
+			    	}
+			    	if(starOrbMatches == 5)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			        	toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 5 match in row "+ (row-4));
+			    	}
 					//Reset the match count as the chain was broken.
 		        	starOrbMatches = 0;
+				}
+		    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap[0].length - 1)
+				{
+					//If a Star Orb match is found, print a message with the row number.
+			    	if(starOrbMatches == 3)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			    		toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 3 match in row "+ (row-4));
+			    	}
+			    	if(starOrbMatches == 4)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			    		toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 4 match in row "+ (row-4));
+			    	}
+			    	if(starOrbMatches == 5)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 5 match in row "+ (row-4));
+			    	}
+			    	if(starOrbMatches == 6)
+			    	{
+			    		toBeDeletedCollection.add(gameMap[row][i-5]);
+			    		toBeDeletedCollection.add(gameMap[row][i-4]);
+			    		toBeDeletedCollection.add(gameMap[row][i-3]);
+			        	toBeDeletedCollection.add(gameMap[row][i-2]);
+			        	toBeDeletedCollection.add(gameMap[row][i-1]);
+			        	toBeDeletedCollection.add(gameMap[row][i]);
+			        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+			    		System.out.println("Found star 6 match in row "+ (row-4));
+			    	}
 				}
 			}
 			//Reset the match count for the next row.
         	starOrbMatches = 0;
 		}
+    	
     	//Checking for matches vertically.
     	for(int col = 6; col <= gameMap[0].length - 1; col++)
     	{      
@@ -996,32 +1413,62 @@ public class GameWorld implements IGameWorld
     	    	if(gameMap[i][col] instanceof StarOrb)
     	    	{
     	    		starOrbMatches++;
-        	    	//If a Star Orb match is found, print a message with the row number.
+    	    	}
+    	    	//If the chain was broken, check for up to 4 matches of Orbs.
+    	    	else
+    	    	{
+    	    		//If a Star Orb match is found, print a message with the col number.
         	    	if(starOrbMatches == 3)
         	    	{
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
         	    		toBeDeletedCollection.add(gameMap[i-2][col]);
-        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
-        	        	toBeDeletedCollection.add(gameMap[i][col]);
-        	        	setGameClock(getGameClock() + matchStarClockRate);
+        	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+        	        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
         	        	System.out.println("Found star 3 match in column "+ (col-5));
         	    	}
         	    	if(starOrbMatches == 4)
         	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
-        	    		setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 4 match in column "+ (col-5));
+        	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+        	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+        	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+        	    		setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+           	    		System.out.println("Found star 4 match in column "+ (col-5));
         	    	}
-        	    	if(starOrbMatches == 5)
-        	    	{
-        	    		toBeDeletedCollection.add(gameMap[i][col]);
-        	    		setGameClock(getGameClock() + matchStarClockRate);
-        	    		System.out.println("Found star 5 match in column "+ (col-5));
-        	    	}
+    	    		//Reset the match count as the chain was broken.
+    	    		starOrbMatches = 0;
     	    	}
-    	    	else
+    	    	//If the check was unbroken toward the end, check for possible matches.
+				if(i == gameMap.length - 1)
 				{
-					//Reset the match count as the chain was broken.
-		        	starOrbMatches = 0;
+	    	    	//If a Light Orb match is found, print a message with the col number.
+	    	    	if(starOrbMatches == 3)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i][col]);
+	    	        	setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+	    	        	System.out.println("Found star 3 match in column "+ (col-5));
+	    	    	}
+	    	    	if(starOrbMatches == 4)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+	       	    		System.out.println("Found star 4 match in column "+ (col-5));
+	    	    	}
+	    	    	if(starOrbMatches == 5)
+	    	    	{
+	    	    		toBeDeletedCollection.add(gameMap[i-4][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-3][col]);
+	    	        	toBeDeletedCollection.add(gameMap[i-2][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i-1][col]);
+	    	    		toBeDeletedCollection.add(gameMap[i][col]);
+	    	    		setGameClock(getGameClock()+matchStarClockRate*starOrbMatches);
+	    	    		System.out.println("Found star 5 match in column "+ (col-5));
+	    	    	}
 				}
     	    }
     	    //Reset the match count for the next row.
