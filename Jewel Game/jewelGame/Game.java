@@ -94,6 +94,8 @@ public class Game extends JFrame implements ActionListener
         this.add(buttonPanelSetUp(), BorderLayout.WEST);
         //Requesting focus for the MapView panel.
         mv.requestFocus();
+        //Setting the delay of the timer with "elapsedTime"
+        timer.setDelay(elapsedTime);
 	    //Starting the timer.
 	    timer.start();
 	    //Starting the background music.
@@ -155,7 +157,7 @@ public class Game extends JFrame implements ActionListener
 	{
 		//The following methods sets the elapsed time for relevant objects and
 		//calls the Game World's "tick" function for every Timer event.
-		tickCommand.setTimerCycle(elapsedTime);
+		tickCommand.setTimerCycle(timer.getDelay());
     	tickCommand.actionPerformed(e);
 	}
 }

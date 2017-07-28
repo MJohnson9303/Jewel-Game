@@ -71,10 +71,13 @@ public class MapView extends JPanel implements IObserver, MouseListener
   	//which obtains where the mouse was clicked.
   	public void mouseClicked(MouseEvent e) 
   	{
-  		mouseLocation = e.getPoint();
-  		gameWorldProxy.setGameObjectSelect(mouseLocation);
-  		this.repaint();
-  		
+  		//If the game is not paused, allow the user to click in the MapView.
+  		if(gameWorldProxy.getGameMode() == true)
+  		{
+  			mouseLocation = e.getPoint();
+  	  		gameWorldProxy.setGameObjectSelect(mouseLocation);
+  	  		this.repaint();
+  		}
   	}
   	public void mouseEntered(MouseEvent e) 
   	{
