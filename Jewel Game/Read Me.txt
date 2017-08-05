@@ -1,13 +1,13 @@
 Hello. This is a is a simple jewel matching game that I developed out of curiosity. The player has 3 minutes to get to the highest
 level you can. There is no skyfall matching (where jewels slide down the screen and cause additional jewel matching for the player).
-To increase the time limit the player can match "star orbs" (edited image owned by Nintendo) by 12 seconds for each orb. For the
+To increase the time limit the player can match "star orbs" (edited image owned by Nintendo) by 2 seconds for each orb. For the
 other orbs in the game the player can receive points toward the goal of each level. Once the goal is reached, the goal is updated and
 the player's points are reset to 0 for the new level. There is no transition animation between level nor congratulatory music.
 In general when a match is made the matched Orbs shrink away and are replaced by new Orbs that appear to grow in their place.
+There is a delayed deletion animation between each orb type.
+The user can simply click on a gem and switch its location with another gem anywhere on the board. There is no dragging replacement in this game.
 
-Assuming you have at least downloaded Java JRE, you can simple click on "Start_Game" to start the game. If you have download
-Java JDK to alter and compile new programming such as for the files for this game, you can click on "Compile_Game" to compile the changes.
-
+Assuming you have at least installed a Java JRE, you can simple click on "Start_Game" to start the game.
 Win Conditions: None (just try to reach the highest level you can)
 Loss Conditions: Run out of time
 				 
@@ -21,6 +21,7 @@ Game Objects (images owned by GungHo or Nintendo):
         DarknessOrb: Match for points.
         LightOrb: Match for points.
         StarOrb: Match for more game time.
+	SquarePanel: Makes up the board in this game.
 
 Point System:
 	Star Orbs: 12 seconds added to the timer limit.

@@ -7,7 +7,8 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-//Observer class that observes GameWorld for game state value changes and displays changes.
+//Observer class that observes GameWorld for game state value changes
+//and displays the game board that the user can click on.
 public class MapView extends JPanel implements IObserver, MouseListener
 {
 	private Graphics g;
@@ -71,10 +72,13 @@ public class MapView extends JPanel implements IObserver, MouseListener
   	//which obtains where the mouse was clicked.
   	public void mouseClicked(MouseEvent e) 
   	{
-  		mouseLocation = e.getPoint();
-  		gameWorldProxy.setGameObjectSelect(mouseLocation);
-  		this.repaint();
-  		
+  		//If the game is not paused, allow the user to click in the MapView.
+  		if(gameWorldProxy.getGameMode() == true)
+  		{
+  			mouseLocation = e.getPoint();
+  	  		gameWorldProxy.setGameObjectSelect(mouseLocation);
+  	  		this.repaint();
+  		}
   	}
   	public void mouseEntered(MouseEvent e) 
   	{
