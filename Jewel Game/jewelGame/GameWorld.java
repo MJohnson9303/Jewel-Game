@@ -7,10 +7,12 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Vector;
 
-
+//This class is the controller of the game. It contains the bulk of the logic for 
+//the game to run such as orb match detection, score/level handling, orb replacement
+//and so on.
 public class GameWorld implements IGameWorld
 {
-	//Game state values 
+	//Game state values*****************
 	private int gamePoints = 0;
 	//gameClock is in seconds.
 	private int gameClock = 180;
@@ -19,11 +21,11 @@ public class GameWorld implements IGameWorld
 	private boolean gameSound = true;
     //true for "play" and false for "pause"
     private boolean gameMode = true;
-	//Creating GameWorldCollection object for collection and indirect accessing of game objects
-    //private GameWorldCollection gameWorldCollection = new GameWorldCollection();
+    //***********************************
+    
     //GameWorldObjectFactoryObject that will be used to create game world objects as needed
     private GameWorldObjectFactory gwof = new GameWorldObjectFactory();
-    //Creating Observer collection object
+    //Observer collection object for observers like MapView and ScoreView.
     private Vector<IObserver> observerCollection = new Vector<IObserver>();
     //An object to hold an object from the collection as needed.
     private GameWorldObject holdObject;
@@ -34,10 +36,12 @@ public class GameWorld implements IGameWorld
 	//second item is selected.
 	private GameWorldObject holdMovableObject1;
 	private GameWorldObject holdMovableObject2;
-	//This is used to keep track of the elapsed time from the timer for the gameClock in tick(int elapsedTime).
+	//This is used to keep track of the elapsed time from the timer for the gameClock in "tick(int elapsedTime)"
+	//as well as for any operations in "tick(elaspedTime)".
 	private int elapsedTime = 0;
-	//This is used to keep track of selected objects in the game.
-	int selectedItems = 0;
+	//This is used to keep track of selected objects in the game in 
+	//"setGameObjectSelect(Point2Dm)".
+	private int selectedItems = 0;
     //Creating new Sound object set to the path of the game's background music.
     private Sound backGroundSound = new Sound("." + File.separator + "Sounds" + File.separator + "03-a-new-journey.wav");
 	//This array will contain the game map with the first 5/6 rows/columns belong to the panels to form
@@ -50,10 +54,12 @@ public class GameWorld implements IGameWorld
 	private int match4PointsRate = 150;
 	private int match5PointsRate = 300;
 	private int match6PointsRate = 500;
-	//Flat rate for all star orb matches. 60 seconds is the highest possible reward for a type of match.
-	private int matchStarClockRate = 10;
+	//Flat rate for all star orb matches. 12 seconds is the highest possible reward for a type of match.
+	private int matchStarClockRate = 2;
+	//This variable will be used to revolve around the deletion of orb types from the board.
+	private int revolvingOrbNumber = 1;
 	
-	//This method is used to determine game conditions such as if the User reached the next level
+	//This method is used to determine game conditions such as if the user reached the next level
 	//or ran out of time.
 	public void checkGameConditions()
 	{
@@ -95,19 +101,27 @@ public class GameWorld implements IGameWorld
 	{
 		gameClock = time;
 	}
+	//Method that returns the int value of the game clock.
 	public int getGameClock()
 	{
 		return gameClock;
 	}
+	//Method the returns the string value of the game clock in the form of 
+	//minutes and seconds (0:00).
 	public String getGameClockText()
 	{
 		int gameClock = getGameClock();
+		//Calculating the number of minutes on the clock.
 		String minutes = String.valueOf(gameClock/60);
+		//Calculating the number of seconds on the clock.
 		String seconds = String.valueOf(gameClock % 60);
+		//Appending "0" to the number of seconds on the clock when
+		//the value of seconds is below 10 to avoid the look of (1:9) for example.
 		if(Integer.valueOf(seconds) < 10)
 		{
 			seconds = "0"+seconds;
 		}
+		//Assigning the calculated minutes and seconds to the String variable.
 		String gameClockText = minutes + ":" + seconds;
 		return gameClockText;
 	}
@@ -121,34 +135,37 @@ public class GameWorld implements IGameWorld
 	{
 		return gameLevel;
 	}
+	//Method that sets whether the sound is on or not (true or false respectively).
 	public void setGameSound(boolean newGameSound)
 	{
 		gameSound = newGameSound;
 	}
+	//Method that returns the boolean value of whether or not sound is on.
 	public boolean getGameSound()
 	{
 		return gameSound;
 	}
-	//Method that returns the Sound object backGroundSound
+	//Method that returns the Sound object backGroundSound.
 	public Sound getBackGroundSound()
 	{
 		return backGroundSound;
 	}
-	//Method that sets the game's game mode
+	//Method that sets the game's game mode.
 	public void setGameMode(boolean newGameMode)
 	{
 		gameMode = newGameMode;
 	}
-	//Method that returns the game's current game mode
+	//Method that returns the game's current game mode.
 	public boolean getGameMode()
 	{
 		return gameMode;
 	}
+	//Method that returns the game world collection.
 	public GameWorldObject[][] getGameWorldCollection() 
 	{
 		return gameMap;
 	}
-	//Method sets the initial layout of objects in Game World and initializes gameStateValue currentFuelLevel
+	//Method sets the initial layout of objects in Game World.
 	public void initLayout()
 	{
 		createCheckerBoard();
@@ -188,8 +205,6 @@ public class GameWorld implements IGameWorld
 	//Method that places random Orbs at the same locations of the SquarePanels.
 	//Since the background of the Orb images are transparent, it appears the Orbs
 	//are placed on top of a checker board.
-	//I also use this method to fill in a 2D GameWorldObject array that will be used
-	//for match checking.
 	private void fillCheckerBoard()
 	{
 		int xLocation = 60;
@@ -228,7 +243,7 @@ public class GameWorld implements IGameWorld
 				{
 					holdObject = gwof.makeDarknessOrb(new Point2D.Double(xLocation, yLocation));
 				}
-				//Incrementing the x location of each square
+				//Incrementing the x location of each square.
 				xLocation += 120;	
 				//Filling in the 2D array "gameMap" with the randomly generated Orbs for match checking.
 				gameMap[row][col] = holdObject;
@@ -239,12 +254,12 @@ public class GameWorld implements IGameWorld
 			yLocation += 120;
 		}
 	}
-	//Method adds object into observer collection
+	//Method that adds an IObserver object into the observer collection.
     public void addObserver(IObserver obs)
     {
        observerCollection.add(obs);
     }
-    //Method goes through the collection of observers and has them call their update method
+    //Method goes through the collection of observers and has them call their update method.
     public void notifyObservers()
     {
     	proxy = new GameWorldProxy(this);
@@ -256,7 +271,8 @@ public class GameWorld implements IGameWorld
     //Method that selects a GameWorldObject based on the location of a 
     //mouse click, an Orb in this case, moves objects when the second object is 
     //selected and unselects all selected objects.
-    //Used in Game inside the mouseClicked(MouseEvent e) method.
+    //It also calls on various methods to check for potential orb matches.
+    //Used in MapView inside the mouseClicked(MouseEvent e) method.
 	public void setGameObjectSelect(Point2D p) 
 	{
 		for(int row = 5; row <= gameMap.length - 1; row++)
@@ -281,31 +297,32 @@ public class GameWorld implements IGameWorld
 						//On the second click, set the second Orb to "holdMovableObject2".
 						//Reset "selectedItems" to 0.
 						//Invoke "updatePositions()" which switches the Orbs.
+						//Unselect all selected orbs and check for various Orb matches.
 						if(selectedItems == 2)
 						{
 							holdMovableObject2 = holdObject;
 							selectedItems = 0;
 							updatePositions();
 							updateGameMapForGemSwitch();
+							unselectAll();
 							checkForFireOrbMatches();
 							checkForWaterOrbMatches();
 							checkForLeafOrbMatches();
 							checkForDarknessOrbMatches();
 							checkForLightOrbMatches();
 							checkForStarOrbMatches();
-							unselectAll();
-							setDeleteAnimationStatus();
 						}
 				   }
 			   }
 	        }
     	}
+		//Printing game map for testing.
 		System.out.println();
 		System.out.println("Map Before Change Due to Match Detection:");
 		displayGameMapText();
 	}
 	//Method that has all movable objects to update their positions.
-  	//Used in setGameObjectSelect(Point2D p) as I didn't want to rely movement
+  	//Used in setGameObjectSelect(Point2D p) as I didn't want to rely on movement
 	//on the clock.
   	private void updatePositions()
   	{
@@ -354,106 +371,6 @@ public class GameWorld implements IGameWorld
 			}
     	}
     }
-    //This method searches through the array for the deleted objects which left a "null" value
-    //and replace the null locations with new Orbs.
-    private void refillGameMapCollection()
-    {
-    	int xLocation = 60;
-		int yLocation = 60;
-		int randomOrbNumber;
-		Random randomNumber = new Random();
-		GameWorldObject holdObject;
-    	for(int row = 5; row <= gameMap.length - 1; row++)
-    	{
-    		for(int col = 6; col <= gameMap[0].length - 1; col++)
-    		{
-    			if(gameMap[row][col] == null)
-    			{
-    				try 
-    				{
-						Thread.sleep(50,0);
-					} 
-    				catch (InterruptedException e) 
-    				{
-						e.printStackTrace();
-					}
-    				randomOrbNumber = randomNumber.nextInt(10000);
-    				if(randomOrbNumber % 11 == 0)
-    				{
-    					holdObject = gwof.makeFireOrb(new Point2D.Double(xLocation, yLocation));
-    				}
-    				else if(randomOrbNumber % 3 == 0)
-    				{
-    					holdObject = gwof.makeWaterOrb(new Point2D.Double(xLocation, yLocation));
-    				}
-    				else if(randomOrbNumber % 5 == 0)
-    				{
-    					holdObject = gwof.makeLeafOrb(new Point2D.Double(xLocation, yLocation));
-    				}
-    				else if(randomOrbNumber % 7 == 0)
-    				{
-    					holdObject = gwof.makeLightOrb(new Point2D.Double(xLocation, yLocation));
-    				}
-    				else if (randomOrbNumber % 2 == 0)
-    				{
-    					holdObject = gwof.makeStarOrb(new Point2D.Double(xLocation, yLocation));
-    				}
-    				else
-    				{
-    					holdObject = gwof.makeDarknessOrb(new Point2D.Double(xLocation, yLocation));
-    				}	
-    				//Filling in the 2D array "gameMap" with the randomly generated Orbs for match checking.
-    				gameMap[row][col] = holdObject;
-    			}
-    			//Incrementing the x location of each square
-				xLocation += 120;
-    		}
-			//Resetting the xLocation. Otherwise, the squares will be made continuously
-			//to the left as more rows are created.
-			xLocation = 60;
-			yLocation += 120;
-    	}
-    }
-    //This subroutine goes through the GameWorldObjects to be deleted and set deletedStatus to true
-    //if they are a deletable object with a deletion animation.
-    private void setDeleteAnimationStatus()
-    {
-    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
-	    while(theDeletedElements.hasNext())
-	    {
-	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
-			if(toBeDeletedObject instanceof IDeletable)
-			{
-				IDeletable deletableObject = (IDeletable) toBeDeletedObject;
-				deletableObject.setDeleteStatus(true);
-			}
-	    }
-    }
-    //This method will go through all soon to be deleted Orbs to check if they have finished 
-    //their deletion animations. This is to prevent a "cut-off" of the animation when the
-    //Orbs are deleted from the game map.
-    private boolean checkIfDeleteAnimationsFinished()
-    {
-    	boolean finished = false;
-    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
-	    while(theDeletedElements.hasNext())
-	    {
-	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
-	    	if(toBeDeletedObject instanceof IDeletable)
-	    	{
-	    		IDeletable idobj = (IDeletable) toBeDeletedObject;
-	    		if(idobj.finishedDeletionAnimation() == true)
-	    		{
-	    			finished = true;
-	    		}
-	    		else
-	    		{
-	    			finished = false;
-	    		}
-	    	}
-	    }
-	    return finished;
-    }
     //This method goes through the array with the collection of matched Orbs and replaces their
     //location with a "null" value.
     private void deleteFoundMatchesFromGameMap()
@@ -474,7 +391,7 @@ public class GameWorld implements IGameWorld
 	    	}
 	    }
     }
-    //Method empties the to-be-deleted-collection.
+    //Method empties the to-be-deleted collection.
     private void emptyToBeDeletedCollection()
     {
     	toBeDeletedCollection.removeAll(toBeDeletedCollection);
@@ -1326,7 +1243,7 @@ public class GameWorld implements IGameWorld
 		    	//If the chain was broken, check for up to 5 matches of Orbs.
 		    	else
 				{
-		    		//If a Light Orb match is found, print a message with the row number.
+		    		//If a Star Orb match is found, print a message with the row number.
 			    	if(starOrbMatches == 3)
 			    	{
 			    		toBeDeletedCollection.add(gameMap[row][i-3]);
@@ -1441,7 +1358,7 @@ public class GameWorld implements IGameWorld
     	    	//If the check was unbroken toward the end, check for possible matches.
 				if(i == gameMap.length - 1)
 				{
-	    	    	//If a Light Orb match is found, print a message with the col number.
+	    	    	//If a Star Orb match is found, print a message with the col number.
 	    	    	if(starOrbMatches == 3)
 	    	    	{
 	    	    		toBeDeletedCollection.add(gameMap[i-2][col]);
@@ -1478,10 +1395,117 @@ public class GameWorld implements IGameWorld
 	public void tick(int elapsedTime)
 	{
 		this.elapsedTime += elapsedTime;
+		//Resetting the revolving variable immediately to prevent any bugs.
+		if(revolvingOrbNumber >= 7)
+		{
+			revolvingOrbNumber = 1;
+		}
 		//Every 100 milliseconds check if soon-to-be-deleted Orbs finished their deletion animations,
 		//delete them from the map, empty the to-be-deleted collection and refill the map.
-		if(this.elapsedTime % 100 == 0)
+		if(this.elapsedTime % 500 == 0)
 		{
+			if(toBeDeletedCollection.size() > 0)
+			{
+				if(revolvingOrbNumber == 1)
+				{
+					if(checkForOrbTypeToDelete("fireorb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("fireorb");
+					}
+					//Move along if there are no Fire Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+				if(revolvingOrbNumber == 2)
+				{
+					if(checkForOrbTypeToDelete("waterorb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("waterorb");
+					}
+					//Move along if there are no Water Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+				if(revolvingOrbNumber == 3)
+				{
+					if(checkForOrbTypeToDelete("leaforb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("leaforb");
+					}
+					//Move along if there are no Leaf Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+				if(revolvingOrbNumber == 4)
+				{
+					if(checkForOrbTypeToDelete("darknessorb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("darknessorb");
+					}
+					//Move along if there are no Darkness Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+				if(revolvingOrbNumber == 5)
+				{
+					if(checkForOrbTypeToDelete("lightorb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("lightorb");
+					}
+					//Move along if there are no Light Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+				if(revolvingOrbNumber == 6)
+				{
+					if(checkForOrbTypeToDelete("starorb") == true)
+					{
+						setDeletionAnimationStatusForOrbType("starorb");
+					}
+					//Move along if there are no Star Orbs to be deleted.
+					else
+					{
+						revolvingOrbNumber++;
+					}
+				}
+			}
+			//Update the revolving variable if a particular orb type is finished its deletion animation.
+			if(checkIfOrbTypeDeletionAnimationFinished("fireorb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			if(checkIfOrbTypeDeletionAnimationFinished("waterorb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			if(checkIfOrbTypeDeletionAnimationFinished("leaforb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			if(checkIfOrbTypeDeletionAnimationFinished("darknessorb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			if(checkIfOrbTypeDeletionAnimationFinished("lightorb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			if(checkIfOrbTypeDeletionAnimationFinished("starorb") == true)
+			{
+				revolvingOrbNumber++;
+			}
+			//If all to-be-deleted Orbs finished their deletion animations, remove them 
+			//from the game map, empty the to-be-deleted collection and refill the game map.
 			if(checkIfDeleteAnimationsFinished() == true)
 			{
 				deleteFoundMatchesFromGameMap();
@@ -1489,7 +1513,7 @@ public class GameWorld implements IGameWorld
 		    	refillGameMapCollection();
 			}
 		}
-		//Every 1000 milliseconds or 1 second, decrement the clock and rest "elapsedTime" to remove
+		//Every 1000 milliseconds or 1 second, decrement the clock and reset "elapsedTime" to remove
 		//possibility of it reaching the limit of "int".
 		if(this.elapsedTime % 1000 == 0)
 		{
@@ -1497,10 +1521,306 @@ public class GameWorld implements IGameWorld
 			//Resetting the variable to zero.
 			this.elapsedTime = 0;
 		}
+		//Check game condition such as if the User ran out of time, reached the next level and so on.
 		checkGameConditions();
+		//Update the MapView and ScoreView.
 		notifyObservers();
 	}
-	//Method displays the contents of gameMap.
+	//This method goes through the GameWorldObjects to be deleted and set deletedStatus to "true"
+    //if they are a deletable object with a deletion animation using a String parameter to determine
+    //which type of GameWorldObject.
+    private void setDeletionAnimationStatusForOrbType(String orbType)
+    {
+    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
+	    while(theDeletedElements.hasNext())
+	    {
+	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
+			switch(orbType)
+			{
+				case "fireorb":
+			    	if(toBeDeletedObject instanceof FireOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+				case "waterorb":
+			    	if(toBeDeletedObject instanceof WaterOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+				case "leaforb":
+			    	if(toBeDeletedObject instanceof LeafOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+				case "darknessorb":
+			    	if(toBeDeletedObject instanceof DarknessOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+				case "lightorb":
+			    	if(toBeDeletedObject instanceof LightOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+				case "starorb":
+			    	if(toBeDeletedObject instanceof StarOrb)
+					{
+						IDeletable deletableObject = (IDeletable) toBeDeletedObject;
+						deletableObject.setDeleteStatus(true);
+					}
+			    	break;
+			}
+	    }
+    }
+    //This method is to check if a specific type of Orb is within the to-be-deleted collection
+    //and returns a boolean value of the result.
+    private boolean checkForOrbTypeToDelete(String orbType)
+    {
+    	Boolean orbTypeDetected = false;
+    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
+	    while(theDeletedElements.hasNext())
+	    {
+	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
+			switch(orbType)
+			{
+				case "fireorb":
+			    	if(toBeDeletedObject instanceof FireOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+		    	case "leaforb":
+		    		if(toBeDeletedObject instanceof LeafOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+		    	case "waterorb":
+		    		if(toBeDeletedObject instanceof WaterOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+		    	case "darknessorb":
+		    		if(toBeDeletedObject instanceof DarknessOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+		    	case "lightorb":
+		    		if(toBeDeletedObject instanceof LightOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+		    	case "starorb":
+		    		if(toBeDeletedObject instanceof StarOrb)
+					{
+						orbTypeDetected = true;
+					}
+			    	break;
+			}
+	    }
+	    return orbTypeDetected;
+    }
+    //This method will go through all soon to be deleted Orbs to check if they have finished 
+    //their deletion animations. This is to help prevent a "cut-off" of the animation when the
+    //Orbs are deleted from the game map.
+    private boolean checkIfOrbTypeDeletionAnimationFinished(String orbType)
+    {
+    	boolean finished = false;
+    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
+	    while(theDeletedElements.hasNext())
+	    {
+	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
+	    	switch(orbType)
+	    	{
+	    		case "fireorb":
+			    	if(toBeDeletedObject instanceof FireOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    		case "leaforb":
+			    	if(toBeDeletedObject instanceof LeafOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    		case "waterorb":
+			    	if(toBeDeletedObject instanceof WaterOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    		case "darknessorb":
+			    	if(toBeDeletedObject instanceof DarknessOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    		case "lightorb":
+			    	if(toBeDeletedObject instanceof LightOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    		case "starorb":
+			    	if(toBeDeletedObject instanceof StarOrb)
+			    	{
+			    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+			    		if(idobj.finishedDeletionAnimation() == true)
+			    		{
+			    			finished = true;
+			    		}
+			    		else
+			    		{
+			    			finished = false;
+			    		}
+			    	}
+			    	break;
+	    	}
+	    }
+	    return finished;
+    }
+	//This method searches through the array for the deleted objects which left a "null" value
+    //and replace the null locations with new Orbs.
+    private void refillGameMapCollection()
+    {
+    	int xLocation = 60;
+		int yLocation = 60;
+		int randomOrbNumber;
+		Random randomNumber = new Random();
+		GameWorldObject holdObject;
+    	for(int row = 5; row <= gameMap.length - 1; row++)
+    	{
+    		for(int col = 6; col <= gameMap[0].length - 1; col++)
+    		{
+    			if(gameMap[row][col] == null)
+    			{
+    				//Having the game sleep for 50 milliseconds to help add more
+    				//diversity in orbs placed in the game map.
+    				try 
+    				{
+						Thread.sleep(50,0);
+					} 
+    				catch (InterruptedException e) 
+    				{
+						e.printStackTrace();
+					}
+    				randomOrbNumber = randomNumber.nextInt(10000);
+    				if(randomOrbNumber % 11 == 0)
+    				{
+    					holdObject = gwof.makeFireOrb(new Point2D.Double(xLocation, yLocation));
+    				}
+    				else if(randomOrbNumber % 3 == 0)
+    				{
+    					holdObject = gwof.makeWaterOrb(new Point2D.Double(xLocation, yLocation));
+    				}
+    				else if(randomOrbNumber % 5 == 0)
+    				{
+    					holdObject = gwof.makeLeafOrb(new Point2D.Double(xLocation, yLocation));
+    				}
+    				else if(randomOrbNumber % 7 == 0)
+    				{
+    					holdObject = gwof.makeLightOrb(new Point2D.Double(xLocation, yLocation));
+    				}
+    				else if (randomOrbNumber % 2 == 0)
+    				{
+    					holdObject = gwof.makeStarOrb(new Point2D.Double(xLocation, yLocation));
+    				}
+    				else
+    				{
+    					holdObject = gwof.makeDarknessOrb(new Point2D.Double(xLocation, yLocation));
+    				}	
+    				//Filling in the 2D array "gameMap" with the randomly generated Orbs for match checking.
+    				gameMap[row][col] = holdObject;
+    			}
+    			//Incrementing the x location of each square
+				xLocation += 120;
+    		}
+			//Resetting the xLocation. Otherwise, the squares will be made continuously
+			//to the left as more rows are created.
+			xLocation = 60;
+			yLocation += 120;
+    	}
+    }
+  //This method will go through all soon to be deleted Orbs to check if they have finished 
+    //their deletion animations. This is to help prevent a "cut-off" of the animation when the
+    //Orbs are deleted from the game map.
+    private boolean checkIfDeleteAnimationsFinished()
+    {
+    	boolean finished = false;
+    	Iterator<GameWorldObject> theDeletedElements = toBeDeletedCollection.listIterator();
+	    while(theDeletedElements.hasNext())
+	    {
+	    	GameWorldObject toBeDeletedObject = (GameWorldObject) theDeletedElements.next();
+	    	if(toBeDeletedObject instanceof IDeletable)
+	    	{
+	    		IDeletable idobj = (IDeletable) toBeDeletedObject;
+	    		if(idobj.finishedDeletionAnimation() == true)
+	    		{
+	    			finished = true;
+	    		}
+	    		else
+	    		{
+	    			finished = false;
+	    		}
+	    	}
+	    }
+	    return finished;
+    }
+	//Method that displays the contents of gameMap.
 	public void displayGameMapText()
 	{
 		for(int row = 5; row <= gameMap.length - 1; row++)

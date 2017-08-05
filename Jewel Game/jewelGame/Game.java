@@ -2,11 +2,8 @@ package jewelGame;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -14,11 +11,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 
-//This class will execute commands based on user input and will check for unknown or illegal commands.
+//This class set up the game for the player.
 public class Game extends JFrame implements ActionListener
 {
 	//Private objects
@@ -38,10 +34,10 @@ public class Game extends JFrame implements ActionListener
     private QuitCommand quitCommand;
 	//Timer object to be used for object animation.
 	private Timer timer; 
-	//This integer variable will be the time cycle for the timer. Set to 1/10 second.
-	//Timer is set to 1/10 a second with this to make the score update more frequent.
+	//This integer variable will be the time cycle for the timer. Set to 1/20 second.
+	//Timer is set to 1/20 a second with this to make the score update more frequent.
 	//GameWorld "tick" method will take this into account for count-down clock.
-	private int elapsedTime = 100;
+	private int elapsedTime = 50;
 	//Construct game world and initialize the layout of the game.
 	public Game()
 	{
@@ -143,7 +139,7 @@ public class Game extends JFrame implements ActionListener
         buttonPanel.add(subtractPointsButton);
         JButton quitButton = new JButton("Quit");
         buttonPanel.add(quitButton);
-	    //Attaching AbstractAction commands to buttons
+	    //Attaching AbstractAction commands to buttons.
 	    gameModeButton.setAction(gameModeCommand);
 	    addTimeButton.setAction(addTimeCommand);
 	    subtractTimeButton.setAction(subtractTimeCommand);

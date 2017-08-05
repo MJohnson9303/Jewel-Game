@@ -1,14 +1,11 @@
 package jewelGame;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 
 public class FireOrb extends GameWorldObject implements IDrawable, ISelectable, IMovable, IDeletable
@@ -18,8 +15,6 @@ public class FireOrb extends GameWorldObject implements IDrawable, ISelectable, 
 	private boolean selected;
 	//Radius of the orb.
 	private double radius;
-	//This variable will be used for slide conditions.
-	private boolean slideStatus;
 	//This variable will be used for deletion animation conditions.
 	private boolean deleteStatus;
 	//Used as rate of deletion for "deleteDraw".

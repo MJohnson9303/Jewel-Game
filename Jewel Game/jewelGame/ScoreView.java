@@ -6,7 +6,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.LineBorder;
 
-//Observer class that observes GameWorld for game state value changes and displays changes within the GUI frame in Game
+//Observer class that observes GameWorld for game state value changes and 
+//displays information such as level, score and time remaining to the user.
 public class ScoreView extends JPanel implements IObserver
 {
    private GameWorldProxy gameWorldProxy;
@@ -16,13 +17,12 @@ public class ScoreView extends JPanel implements IObserver
    private JLabel gameScoreLabel = new JLabel();
    private JLabel gameScoreGoalLabel = new JLabel();
    private JLabel soundLabel = new JLabel();
-   //Constructor that creates adds labels into the ScoreView panel and sets a black border around it
+   //Constructor that creates adds labels into the ScoreView panel and sets a black border around it.
+   //It also sets up the progress bar for the user's time limit.
    public ScoreView()
    {
 	   timeRemainingLabel.setText("Time Remaining");
 	   add(timeRemainingLabel);
-	   //progressBar.setValue(100);
-	   //progressBar.setString("1:00");
 	   progressBar.setMinimum(0);
 	   progressBar.setMaximum(60);
 	   progressBar.setStringPainted(true);
